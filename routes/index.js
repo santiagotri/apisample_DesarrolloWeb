@@ -1,7 +1,7 @@
 var express = require("express");
 const Joi = require("joi");
-
-const Movie = require("../models/movie")
+const movie = require("../controllers/movie");
+//const Movie = require("../models/movie");
 
 var router = express.Router();
 
@@ -10,68 +10,52 @@ const schema = Joi.object({
 });
 
 router.get("/movies", function (req, res, next) {
-  Movie.findAll().then(movies=>{
+  movie.getMovies().then((movies) => {
+    console.log("Movies", movies);
     res.send(movies);
-  })
+  });
 });
 
 router.get("/movies/:id", function (req, res, next) {
-
-  Movie.findByPk(req.params.id).then(movie=>{
-    console.log("Movie", movie)
+  movie.getMovie(req.params.id).then((movie) => {
+    console.log("Movies", movie);
     if (movie === null) {
-      return res.status(404).send("The movie with the given id was not found");
+      res.status(404).send("La película con el id no existe");
     }
     res.send(movie);
-  })
+  });
 });
 
 router.post("/movies", function (req, res, next) {
-  
   const { error } = schema.validate(req.body);
   if (error) {
     return res.status(404).send(error);
   }
 
-  Movie.create(req.body).then(movie=>{
+  movie.createMovie(req.body).then((movie) => {
+    console.log("Movies", movie);
     res.send(movie);
-  })
-
+  });
 });
 
 router.put("/movies/:id", function (req, res, next) {
-  Movie.update(req.body, { where: {
-    id: req.params.id
-  }}).then(result=>{
-    console.log("Update", result)
-    if (result[0] === 0){
-      return res.status(404).send("The movie with the given id was not found");
+  movie.updateMovie(req.params.id, req.body).then((movie) => {
+    console.log("movie", movie);
+    if (movie.matchedCount === 0) {
+      return res.status(404).send("La película con el id no existe");
     }
-    res.send("Movie updated")
-  })
-
-  /*const movie = movies.find((m) => m.id === parseInt(req.params.id));
-
-  if (!movie) {
-    return res.status(404).send("The movie with the given id was not found");
-  }
-
-  movie.name = req.body.name;
-  res.send(movie);
-*/
+    res.send(movie);
+  });
 });
 
-
 router.delete("/movies/:id", function (req, res, next) {
-  
-  Movie.destroy({where: {
-    id: req.params.id
-  }}).then(result=>{
-    if(result === 0) {
-      return res.status(404).send("The movie with the given id was not found");
+  movie.deleteMovie(req.params.id).then((movie) => {
+    console.log("movie", movie);
+    if (movie.deletedCount === 0) {
+      return res.status(404).send("La película con el id no existe");
     }
     res.sendStatus(204);
-  })
+  });
 });
 
 module.exports = router;
