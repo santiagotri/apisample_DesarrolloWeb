@@ -2,6 +2,7 @@ const mongo = require("../lib/mongo");
 const ObjectID = require("mongodb").ObjectId;
 
 function getMovies() {
+  console.log("hola")
   return mongo.then((client) => {
     return client.db("prueba").collection("movies").find({}).toArray();
   });
